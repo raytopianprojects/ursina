@@ -3,7 +3,6 @@ from ursina import *
 
 basic_lighting_shader = Shader(name='basic_lighting_shader', language=Shader.GLSL,
 vertex = '''
-#version 140
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelMatrix;
 
@@ -22,8 +21,6 @@ void main() {
 ''',
 
 fragment='''
-#version 140
-
 uniform sampler2D p3d_Texture0;
 uniform vec4 p3d_ColorScale;
 in vec2 texcoord;
