@@ -4,6 +4,7 @@ from ursina import application
 
 default_vertex_shader = '''
 #version 430
+#include defaults.gltf
 uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 in vec2 p3d_MultiTexCoord0;
@@ -17,6 +18,7 @@ void main() {
 
 default_fragment_shader='''
 #version 430
+#include defaults.gltf
 
 uniform sampler2D tex;
 in vec2 uv;
