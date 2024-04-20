@@ -125,35 +125,35 @@ void main() {
     vec3 color =  NdotL * p3d_LightSource[i].color * diffuseContrib;
 
     vec4 shadowcoord = shad[i];
-    float bias = 0.0001;
+    float bias = 0.001;
     shadowcoord.z += bias;
 
     // We need shadow map size so we can properly sample surronding pixels
     vec2 shadow_size = 1 / textureSize(p3d_LightSource[i].shadowMap, 0); 
     
     // See how many surronding pixels are in shadow
-    float shadow_total = 0.0;
-    // Blur arround the shadow map using PCF
-    for (int y = -1; y <= 1; y++){
-        for (int x = -1; x <= 1; x++){
-            vec4 shadow_coord_offset = vec4(x *  shadow_size.x, y * shadow_size.y, 0, 0);
-            float shadow_depth = textureProj(p3d_LightSource[i].shadowMap, shadowcoord);
-            
-            if (shadow_depth +  bias < shadowcoord.z){
-                shadow_total += 0.0;
-            }else{
-                shadow_total += 1.0;
-            }
-        }
-    }
-    
-    shadow_total = shadow_total / 9.0;
+    //float shadow_total = 0.0;
+    //// Blur arround the shadow map using PCF
+    //for (int y = -1; y <= 1; y++){
+    //    for (int x = -1; x <= 1; x++){
+    //        vec4 shadow_coord_offset = vec4(x *  shadow_size.x, y * shadow_size.y, 0, 0);
+    //        float shadow_depth = textureProj(p3d_LightSource[i].shadowMap, shadowcoord);
+    //        
+    //        if (shadow_depth +  bias < shadowcoord.z){
+    //            shadow_total += 0.0;
+    //        }else{
+    //            shadow_total += 1.0;
+    //        }
+    //    }
+    //}
+    //
+    //shadow_total = shadow_total / 9.0;
     
     vec3 converted_shadow_color = (vec3(1.,1.,1.) - shadow_color.rgb) * shadow_color.a;
     p3d_FragColor.rgb *= p3d_LightSource[i].color.rgb;
     p3d_FragColor.rgb += textureProj(p3d_LightSource[i].shadowMap, shadowcoord) * converted_shadow_color;
     p3d_FragColor.rgb += color - converted_shadow_color;
-  }
+    }
 }
 
 ''',
