@@ -83,7 +83,6 @@ uniform vec4 shadow_color;
 
 void main() {
   p3d_FragColor = texture(p3d_Texture0, texcoords) * p3d_ColorScale * vertex_color;
-
   // float alpha = p3d_Material.roughness * p3d_Material.roughness;
   vec3 N = norm;
 
@@ -124,11 +123,32 @@ void main() {
     // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
     // vec3 color = NdotL * p3d_LightSource[i].color * (diffuseContrib + specContrib);
     vec3 color =  NdotL * p3d_LightSource[i].color * diffuseContrib;
-    const float bias = 0.001;
 
     vec4 shadowcoord = shad[i];
+    float bias = 0.0001;
     shadowcoord.z += bias;
 
+    // We need shadow map size so we can properly sample surronding pixels
+    vec2 shadow_size = 1 / textureSize(p3d_LightSource[i].shadowMap, 0); 
+    
+    // See how many surronding pixels are in shadow
+    float shadow_total = 0.0;
+    // Blur arround the shadow map using PCF
+    for (int y = -1; y <= 1; y++){
+        for (int x = -1; x <= 1; x++){
+            vec4 shadow_coord_offset = vec4(x *  shadow_size.x, y * shadow_size.y, 0, 0);
+            float shadow_depth = textureProj(p3d_LightSource[i].shadowMap, shadowcoord);
+            
+            if (shadow_depth +  bias < shadowcoord.z){
+                shadow_total += 0.0;
+            }else{
+                shadow_total += 1.0;
+            }
+        }
+    }
+    
+    shadow_total = shadow_total / 9.0;
+    
     vec3 converted_shadow_color = (vec3(1.,1.,1.) - shadow_color.rgb) * shadow_color.a;
     p3d_FragColor.rgb *= p3d_LightSource[i].color.rgb;
     p3d_FragColor.rgb += textureProj(p3d_LightSource[i].shadowMap, shadowcoord) * converted_shadow_color;
@@ -153,13 +173,13 @@ if __name__ == '__main__':
     shader = lit_with_shadows_shader
 
     a = Entity(model='cube', shader=shader, y=1, color=color.light_gray)
-    Entity(model='sphere', texture='shore', y=2, x=1, shader=shader)
+    Entity(model='sphere', texture='shore', y=0.5, x=1, shader=shader)
 
     Entity(model='plane', scale=16, texture='grass', shader=lit_with_shadows_shader)
     from ursina.lights import DirectionalLight
-    sun = DirectionalLight(shadow_map_resolution=(2048,2048))
+    sun = DirectionalLight(shadow_map_resolution=(2048/4,2048/4))
     sun.look_at(Vec3(-1,-1,-10))
-    # sun._light.show_frustum()
+    sun._light.show_frustum()
     scene.fog_density = (1, 50)
     Sky(color=color.light_gray)
     EditorCamera()
@@ -168,6 +188,7 @@ if __name__ == '__main__':
         a.x += (held_keys['d'] - held_keys['a']) * time.dt * 5
         a.y += (held_keys['e'] - held_keys['q']) * time.dt * 5
         a.z += (held_keys['w'] - held_keys['s']) * time.dt * 5
+        a.rotation_y += (held_keys['z'] - held_keys['x']) * time.dt * 5
 
     def input(key):
         if key == 'r':
