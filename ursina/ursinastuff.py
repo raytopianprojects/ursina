@@ -26,6 +26,11 @@ def invoke(function, *args, **kwargs):  # reserved keywords: 'delay', 'unscaled'
         unscaled = kwargs['unscaled']
         del kwargs['unscaled']
 
+    ignore_paused = False
+    if 'ignore_paused' in kwargs:
+        ignore_paused = kwargs['ignore_paused']
+        del kwargs['ignore_paused']
+
     if not delay:
         function(*args, **kwargs)
         return None
@@ -34,13 +39,17 @@ def invoke(function, *args, **kwargs):  # reserved keywords: 'delay', 'unscaled'
         Wait(delay),
         Func(function, *args, **kwargs)
     )
+    s.ignore_paused = ignore_paused
     s.unscaled = unscaled
+    if s.ignore_paused:
+        s.unscaled = True
+
     s.start()
     return s
 
 
-def after(delay, unscaled=True):
-    '''@after  decorator for calling a function after some time.
+def after(delay, unscaled=True):    # function for @after decorator. Use the docrator, not this.
+    '''@after decorator for calling a function after some time.
 
         example:
         @after(.4)
@@ -48,11 +57,11 @@ def after(delay, unscaled=True):
             self.on_cooldown = False
             self.color = color.green
     '''
-    def decorator(func):
+    def _decorator(func):
         def wrapper(*args, **kwargs):
             invoke(func, *args, **kwargs, delay=delay, unscaled=unscaled)
         return wrapper()
-    return decorator
+    return _decorator
 
 
 
@@ -135,22 +144,23 @@ def flatten_list(target_list):
     import itertools
     return list(itertools.chain(*target_list))
 
-def flatten_completely(container):
-    for i in container:
-        if isinstance(i, (list, tuple)):
+
+def flatten_completely(target_list):
+    for i in target_list:
+        if isinstance(i, (sub_list, tuple)):
             for j in flatten_list(i):
                 yield j
         else:
             yield i
 
 
-def enumerate_2d(array):
+def enumerate_2d(array):    # usage: for (x, y), value in enumerate_2d(my_2d_list)
     for x, line in enumerate(array):
         for y, value in enumerate(line):
             yield (x, y), value
 
 
-def size_list():    #return a list of current python objects sorted by size
+def size_list():    # return a list of current python objects sorted by size
     import operator
 
     globals_list = []
@@ -187,7 +197,7 @@ def import_all_classes(path=application.asset_folder, debug=False):
         if rel_path.startswith('.'):
             rel_path = rel_path[1:]
         module_name = os.path.basename(file_path).split('.')[0]
-        class_name = snake_to_camel(module_name)
+        # class_name = snake_to_camel(module_name)
         module_name = module_name
         import_statement = 'from ' + rel_path + ' import *'
 

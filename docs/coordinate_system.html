@@ -1,20 +1,16 @@
-
 <!DOCTYPE HTML>
-<!--generated with sswg-->
-
-<html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<head>
-    <link rel="stylesheet" href="sswg.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-<left>
-<title> ursina engine coordinate system</title>
+        <!--generated with sswg-->
+        <html lang="en">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <head>
+            <title> ursina engine coordinate system</title>
+            <link rel="stylesheet" href="sswg.css">
+            <link rel="stylesheet" href="style.css">
+            <link rel="icon" type="image/x-icon" href="favicon.ico">
+        </head>
+        <body>
+        <left><div style="max-width: 1200px; margin: auto;">
 <br>
-
-<div style="max-width: 1200px; margin: auto;">
 <a href="index.html"><img src="ursina_logo_wireframe.webp" style="width:50px; height:auto; margin-right:10px;"/></a> <a href=" installation.html" class="button">Download</a> <a href=" documentation.html" class="button">Documentation</a> <a href=" api_reference.html" class="button">API Reference</a> <a href=" samples.html" class="button">Samples</a> <a href=" asset_store.html" class="button">Asset Store</a> <a href=" https://github.com/sponsors/pokepetter" class="button">Donate🡕</a><br>
 <br>
 <div class="sidebar"><br>
@@ -106,7 +102,7 @@ Coordinate System<br>
 Entity Coordinate System<br>
 </h2><br>
 <br>
-<div class="code_block" style="margin-left: 0em;">
+<div class="code_block" id="code_block_0" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_0)">copy</button>
             y (up)
             |
             |
@@ -123,7 +119,7 @@ Entity Coordinate System<br>
 UI Coordinate System<br>
 </h2><br>
 <br>
-<div class="code_block" style="margin-left: 0em;">                      (-.<yellow>5</yellow>, .<yellow>5</yellow>)           (.<yellow>5</yellow>, .<yellow>5</yellow>)
+<div class="code_block" id="code_block_1" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_1)">copy</button>                      (-.<yellow>5</yellow>, .<yellow>5</yellow>)           (.<yellow>5</yellow>, .<yellow>5</yellow>)
   (window.top_right)_______|__(window.top)____|_______(window.top_right)
                    |       <green>'                  '</green>       |
                    |       <green>'                  '</green>       |
@@ -155,7 +151,7 @@ In general when working with rotation you'll want to only set one of the axes at
 For more complicated rotations you can use <span>entity.look_at(position)</span>, <span>entity.look_at_2d(position)</span><br>
 or even set/get .quaternion if you're comfortable with that. For continuous rotation, <span>entity.rotate(amount)</span> can be good as it will add a rotation to the current rotation.<br>
 <br>
-<div class="code_block" style="margin-left: 0em;">
+<div class="code_block" id="code_block_2" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_2)">copy</button>
            _______
           /
           \-&gt;
@@ -178,7 +174,7 @@ Origin<br>
 Setting the origin will move the origin point of the model.<br>
 This can be especially useful when working with the UI.<br>
 <br>
-<div class="code_block" style="margin-left: 0em;">             (-.<yellow>5</yellow>,.<yellow>5</yellow>)
+<div class="code_block" id="code_block_3" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_3)">copy</button>             (-.<yellow>5</yellow>,.<yellow>5</yellow>)
 +---------+      <yellow>0</yellow>---------+
 |  (<yellow>0</yellow>,<yellow>0</yellow>)  |      |         |
 |    <yellow>0</yellow>    |      |         |
@@ -193,6 +189,16 @@ This can be especially useful when working with the UI.<br>
 +---------+      +---------+
 
 </div><br>
+<script>
+function copy_to_clipboard(containerid) {
+    var range = document.createRange();
+    range.selectNode(containerid); //changed here
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+}
+</script>
 
 </body>
 </html>

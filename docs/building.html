@@ -1,20 +1,16 @@
-
 <!DOCTYPE HTML>
-<!--generated with sswg-->
-
-<html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<head>
-    <link rel="stylesheet" href="sswg.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-<left>
-<title> ursina engine build and release</title>
+        <!--generated with sswg-->
+        <html lang="en">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <head>
+            <title> ursina engine build and release</title>
+            <link rel="stylesheet" href="sswg.css">
+            <link rel="stylesheet" href="style.css">
+            <link rel="icon" type="image/x-icon" href="favicon.ico">
+        </head>
+        <body>
+        <left><div style="max-width: 1200px; margin: auto;">
 <br>
-
-<div style="max-width: 1200px; margin: auto;">
 <a href="index.html"><img src="ursina_logo_wireframe.webp" style="width:50px; height:auto; margin-right:10px;"/></a> <a href=" installation.html" class="button">Download</a> <a href=" documentation.html" class="button">Documentation</a> <a href=" api_reference.html" class="button">API Reference</a> <a href=" samples.html" class="button">Samples</a> <a href=" asset_store.html" class="button">Asset Store</a> <a href=" https://github.com/sponsors/pokepetter" class="button">Donate🡕</a><br>
 <br>
 <div class="sidebar"><br>
@@ -107,7 +103,7 @@ Building Your App with ursina.build<br>
 </h2><br>
 <br>
 Open cmd in the project folder and run<br>
-<div class="code_block" style="margin-left: 0em;">python -m ursina.build
+<div class="code_block" id="code_block_0" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_0)">copy</button>python -m ursina.build
 </div><br>
 It will then move the necessary files to a 'build' directory which you can then distribute.<br>
 <br>
@@ -117,7 +113,7 @@ it copies python and project's dependent packages. Requires a main.py file.<br>
 Copies game scripts and assets into 'build/scr' folder.<br>
 Creates a .bat file to start the game.<br>
 <br>
-<div class="code_block" style="margin-left: 0em;">--ignore            <gray># add assets to ignore</gray>
+<div class="code_block" id="code_block_1" style="margin-left: 0em;"><button class="copy_code_button" onclick="copy_to_clipboard(code_block_1)">copy</button>--ignore            <gray># add assets to ignore</gray>
 --name              <gray># change project name</gray>
 --include_modules   <gray># include extra modules like this: --include_modules module_one,module_two,module_tree</gray>
 --overwrite         <gray># don't ask to overwrite existing build, just overwrite</gray>
@@ -163,6 +159,16 @@ This way is not recommended since it will slow to open and have a bigger file si
 9. Set an output location (optional)<br>
 10. Finally select "convert .py to .exe"<br>
 <br>
+<script>
+function copy_to_clipboard(containerid) {
+    var range = document.createRange();
+    range.selectNode(containerid); //changed here
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+}
+</script>
 
 </body>
 </html>

@@ -1,4 +1,5 @@
 import ursina
+import builtins
 from pathlib import Path
 from panda3d.core import NodePath
 from ursina.vec2 import Vec2
@@ -6,7 +7,6 @@ from ursina.vec3 import Vec3
 from ursina.vec4 import Vec4
 from panda3d.core import Quat
 from panda3d.core import TransparencyAttrib
-from panda3d.core import Shader
 from panda3d.core import TexGenAttrib
 
 from ursina.texture import Texture
@@ -20,8 +20,6 @@ from ursina.mesh import Mesh
 from ursina.sequence import Sequence, Func, Wait
 from ursina.ursinamath import lerp
 from ursina import curve
-from ursina.curve import CubicBezier
-from ursina import mesh_importer
 from ursina.mesh_importer import load_model
 from ursina.texture_importer import load_texture
 from ursina.string_utilities import camel_to_snake
@@ -29,7 +27,7 @@ from textwrap import dedent
 from panda3d.core import Shader as Panda3dShader
 from ursina import shader
 from ursina.shader import Shader
-from ursina.string_utilities import print_info, print_warning
+from ursina.string_utilities import print_warning
 from ursina.ursinamath import Bounds
 from ursina.ursinastuff import invoke, PostInitCaller
 
@@ -207,6 +205,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
                 m.name = value
                 m.setPos(Vec3(0,0,0))
                 self._model = m
+                # import mesh_importer
                 # if not value in mesh_importer.imported_meshes:
                 #     print_info('loaded model successfully:', value)
             else:
@@ -358,6 +357,9 @@ class Entity(NodePath, metaclass=PostInitCaller):
 
         if isinstance(value, Collider):
             self._collider = value
+
+        if isinstance(value, str) and value not in ('box', 'sphere', 'capsule', 'mesh'):
+            raise ValueError(f"Incorrect value for auto-fitted collider: {value}. Choose one of: 'box', 'sphere', 'capsule', 'mesh'")
 
         elif value == 'box':
             if self.model:
@@ -841,7 +843,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
         _name = 'textures/' + name + '.jpg'
         org_pos = camera.position
         camera.position = self.position
-        base.saveSphereMap(_name, size=size)
+        application.base.saveSphereMap(_name, size=size)
         camera.position = org_pos
 
         # print('saved sphere map:', name)
@@ -854,13 +856,13 @@ class Entity(NodePath, metaclass=PostInitCaller):
         _name = 'textures/' + name
         org_pos = camera.position
         camera.position = self.position
-        base.saveCubeMap(_name+'.jpg', size=size)
+        application.base.saveCubeMap(_name+'.jpg', size=size)
         camera.position = org_pos
 
         # print('saved cube map:', name + '.jpg')
         self.model.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldCubeMap)
         self.reflection_map = _name + '#.jpg'
-        self.model.setTexture(loader.loadCubeMap(_name + '#.jpg'), 1)
+        self.model.setTexture(builtins.loader.loadCubeMap(_name + '#.jpg'), 1)
 
 
     @property
@@ -893,16 +895,9 @@ class Entity(NodePath, metaclass=PostInitCaller):
         self.setPos(relative_to, Vec3(value[0], value[1], value[2]))
 
 
-    def rotate(self, value, relative_to=None, duration=0, fps=60):  # rotate around local axis.
+    def rotate(self, value, relative_to=None):  # rotate around local axis.
         if not relative_to:
             relative_to = self
-
-        if duration:
-            rotation_sequence = Sequence()
-            for i in range(60*duration):
-                rotation_sequence.append(Func(self.rotate, rotation_step))
-                rotation_sequence.append(Wait(time_step))
-
 
         self.setHpr(relative_to, Vec3(value[1], value[0], value[2]) * Entity.rotation_directions)
 
@@ -934,7 +929,6 @@ class Entity(NodePath, metaclass=PostInitCaller):
 
 
     def look_at(self, target, axis='forward', up=None): # up defaults to self.up
-        from panda3d.core import Quat
         if isinstance(target, Entity):
             target = Vec3(*target.world_position)
         elif not isinstance(target, Vec3):
@@ -1087,9 +1081,11 @@ class Entity(NodePath, metaclass=PostInitCaller):
             setattr(self, name, value)
             return None
 
+        if self.ignore_paused:
+            unscaled = True
+
         if delay:
-            from ursina.ursinastuff import invoke
-            return invoke(self.animate, name, value, duration=duration, curve=curve, loop=loop, resolution=resolution, time_step=time_step, auto_destroy=auto_destroy, delay=delay, unscaled=unscaled)
+            return invoke(self.animate, name, value, duration=duration, curve=curve, loop=loop, resolution=resolution, time_step=time_step, auto_destroy=auto_destroy, delay=delay, unscaled=unscaled, ignore_paused=self.ignore_paused)
 
         animator_name = name + '_animator'
         # print('start animating value:', name, animator_name )
@@ -1099,7 +1095,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
         if hasattr(self, animator_name) and getattr(self, animator_name) in self.animations:
             self.animations.remove(getattr(self, animator_name))
 
-        sequence = Sequence(loop=loop, time_step=time_step, auto_destroy=auto_destroy, unscaled=unscaled)
+        sequence = Sequence(loop=loop, time_step=time_step, auto_destroy=auto_destroy, unscaled=unscaled, ignore_paused=self.ignore_paused)
 
         setattr(self, animator_name, sequence)
         self.animations.append(sequence)
@@ -1169,20 +1165,21 @@ class Entity(NodePath, metaclass=PostInitCaller):
 
         self.animations.append(self.shake_sequence)
         self.shake_sequence.unscaled = unscaled
+        self.shake_sequence.ignore_paused = self.ignore_paused
         self.shake_sequence.start()
         return self.shake_sequence
 
     def animate_color(self, value, duration=.1, interrupt='finish', unscaled=False, **kwargs):
-        return self.animate('color', value, duration, interrupt=interrupt, unscaled=unscaled,**kwargs)
+        return self.animate('color', value, duration, **kwargs)
 
     def fade_out(self, value=0, duration=.5, unscaled=False, **kwargs):
-        return self.animate('color', Vec4(self.color[0], self.color[1], self.color[2], value), duration=duration, unscaled=unscaled, **kwargs)
+        return self.animate('color', Vec4(self.color[0], self.color[1], self.color[2], value), duration=duration, **kwargs)
 
-    def fade_in(self, value=1, duration=.5, unscaled=False, **kwargs):
-        return self.animate('color', Vec4(self.color[0], self.color[1], self.color[2], value), duration=duration, unscaled=unscaled, **kwargs)
+    def fade_in(self, value=1, duration=.5, **kwargs):
+        return self.animate('color', Vec4(self.color[0], self.color[1], self.color[2], value), duration=duration, **kwargs)
 
-    def blink(self, value=ursina.color.clear, duration=.1, delay=0, curve=curve.in_expo_boomerang, interrupt='finish', unscaled=False, **kwargs):
-        return self.animate_color(value, duration=duration, delay=delay, curve=curve, interrupt=interrupt, unscaled=unscaled, **kwargs)
+    def blink(self, value=ursina.color.clear, duration=.1, delay=0, curve=curve.in_expo_boomerang, interrupt='finish', **kwargs):
+        return self.animate_color(value, duration=duration, delay=delay, curve=curve, interrupt=interrupt, **kwargs)
 
 
 
@@ -1229,7 +1226,7 @@ class Entity(NodePath, metaclass=PostInitCaller):
 
         self._pq.sort_entries()
         entries = self._pq.getEntries()
-        entities = [e.get_into_node_path().parent for e in entries]
+        entities = [e.get_into_node_path().parent.getPythonTag('Entity') for e in entries]
 
         entries = [        # filter out ignored entities
             e for i, e in enumerate(entries)
